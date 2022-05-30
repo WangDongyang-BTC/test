@@ -1,63 +1,33 @@
-name: Build and Deploy
-
-on:
-  workflow_dispatch: {}
-
-env:
-  applicationfolder: spring-boot-hello-world-example
-  AWS_REGION: ##region##
-  S3BUCKET: ##s3-bucket## 
-
-
-jobs:
-  build:
-    name: Build and Package
-    runs-on: ubuntu-20.04
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v2
-        name: Checkout Repository
-
-      - uses: aws-actions/configure-aws-credentials@v1
-        with:
-          role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
-          role-session-name: GitHub-Action-Role
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-
-      - name: chmod
-        run: chmod -R +x ./.github
-
-      - name: Build and Package Maven
-        id: package
-        working-directory: ${{ env.applicationfolder }}
-        run: $GITHUB_WORKSPACE/.github/scripts/build.sh
-
-      - name: Upload Artifact to s3
-        working-directory: ${{ env.applicationfolder }}/target
-        run: aws s3 cp *.war s3://${{ env.S3BUCKET }}/
-        
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: Dev
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-    - uses: actions/checkout@v2
-    - uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-to-assume: ${{ secrets.IAMROLE_GITHUB }}
-        role-session-name: GitHub-Action-Role
-        aws-region: ${{ env.AWS_REGION }}
-    - run: |
-        echo "Deploying branch ${{ env.GITHUB_REF }} to ${{ github.event.inputs.environment }}"
-        commit_hash=`git rev-parse HEAD`
-        aws deploy create-deployment --application-name CodeDeployAppNameWithASG --deployment-group-name CodeDeployGroupName --github-location repository=$GITHUB_REPOSITORY,commitId=$commit_hash --ignore-application-stop-failures
+- name: Sourcetoad - AWS CodeDeploy for GitHub Actions
+ # You may pin to the exact commit or the version.
+  # uses: sourcetoad/aws-codedeploy-action@0d44152a7073d8a249d9194d517ca16d06e0b6b5
+  uses: sourcetoad/aws-codedeploy-action@v1.3.0
+  with:
+    # AWS Access Key (Required if no aws-actions/configure-aws-credentials)
+    aws_access_key: AKIARALTQQTM6T2CTXHR
+    # AWS Secret Key (Required if no aws-actions/configure-aws-credentials)
+    aws_secret_key: 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
+    # AWS Region
+    aws_region: ap-northeast-1
+    # S3 Bucket for CodeDeploy Assets
+    s3_bucket: teamj-s3
+    # S3 Folder for ZIP.
+    s3_folder: projectj
+    # Directory to be archived instead of entire workspace.
+    directory: /home/ec2-user
+    # Zip to be used for deployment, instead of archiving a directory.
+    archive: ./
+    # Custom flags to be passed to zip during archiving.
+    #custom_zip_flags: # optional
+    # Files to be excluded during archiving (space delimited).
+    #excluded_files: # optional
+    # AWS CodeDeploy Application Name
+    codedeploy_name: ProjectJ
+    # AWS CodeDeploy Application Group
+    codedeploy_group: rojectj
+    # Whether to register the deployment (vs automatic deploy).
+    #codedeploy_register_only: # optional, default is false
+    # Max amount of iterations (15s increments) to wait for a deployment
+    #max_polling_iterations: # optional, default is 60
+    # Whether to skip all AWS related steps.
+    #dry_run: # optional, default is false
