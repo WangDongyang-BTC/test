@@ -291,14 +291,14 @@ Resources:
   WebappApplication:
     Type: AWS::CodeDeploy::Application
     Properties:
-      ApplicationName: CodeDeployAppNameWithASG
+      ApplicationName: ProjectJ
   WebappDeploymentGroup:
     Type: AWS::CodeDeploy::DeploymentGroup
     Properties:
       ApplicationName: !Ref WebappApplication
       ServiceRoleArn: !GetAtt CodeDeployRole.Arn
       DeploymentConfigName: CodeDeployDefault.OneAtATime
-      DeploymentGroupName: CodeDeployGroupName
+      DeploymentGroupName: projectj
       AutoRollbackConfiguration:
           Enabled: true
           Events:
